@@ -1,10 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'Run_by', description: 'Who is running the pipeline?')
+        string(name: 'IMAGE_TAG', defaultValue: '1.0', description: 'Tag for the Docker image')
+        string(name: 'IMAGE_NAME', defaultValue: 'car-web', description: 'Name for the Docker image')
+    }
+
     environment {
-        IMAGE_NAME   = "car-web"
-        IMAGE_TAG    = "1.0"
-        DOCKER_REPO  = "arunawsdevops/car-web"
+        DOCKER_REPO = "arunawsdevops"
     }
 
     stages {
@@ -24,7 +28,8 @@ pipeline {
 
         stage('docker-build') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh "docker build -t ${params.IMAGE_NAME}:${params.IMAGE_TAG} ."
+                echo "Build triggered by: ${params.Run_by}"
             }
         }
 
@@ -34,13 +39,14 @@ pipeline {
             }
         }
 
-        stage('Docker-image-push') {
+        stage('dockerhub-push') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker_hub_cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REPO}:${IMAGE_TAG}
-                        docker push ${DOCKER_REPO}:${IMAGE_TAG}
+                        docker tag ${params.IMAGE_NAME}:${params.IMAGE_TAG} ${DOCKER_REPO}/${params.IMAGE_NAME}:${params.IMAGE_TAG}
+                        docker push ${DOCKER_REPO}/${params.IMAGE_NAME}:${params.IMAGE_TAG}
+                        docker logout
                     """
                 }
             }
