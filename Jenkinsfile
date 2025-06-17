@@ -51,5 +51,22 @@ pipeline {
                 }
             }
         }
+
+        stage('k8 deployment') {
+            steps {
+                withKubeConfig(
+                    caCertificate: '', 
+                    clusterName: '', 
+                    contextName: '', 
+                    credentialsId: 'eks_cred', 
+                    namespace: '', 
+                    restrictKubeConfigAccess: false, 
+                    serverUrl: ''
+                ) {
+                    sh 'kubectl get nodes'
+                    sh 'kubectl get ns'
+                }
+            }
+        }
     }
 }
