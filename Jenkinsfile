@@ -65,6 +65,8 @@ pipeline {
                 ) {
                     sh 'kubectl get nodes'
                     sh 'kubectl get ns'
+                    sh 'kubectl apply -f car-deploy.yaml'
+                    sh 'kubectl apply -f car-svc.yaml'
                 }
             }
         }
